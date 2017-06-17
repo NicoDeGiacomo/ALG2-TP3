@@ -29,7 +29,9 @@ class Grafo:
         return vertice2 in self.dict[vertice1]
 
     def obtener_adyacentes(self, vertice):
-        return self.dict.get(vertice)
+        if not self.existe_vertice(vertice):
+            return None
+        return list(self.dict.get(vertice).keys())
 
     def existe_vertice(self, vertice):
         return vertice in self.dict
@@ -45,6 +47,6 @@ class Grafo:
 
     def __existen_vertices__(self, vertices):
         for v in vertices:
-            if v not in self.dict:
+            if not self.existe_vertice(v):
                 return False
         return True
