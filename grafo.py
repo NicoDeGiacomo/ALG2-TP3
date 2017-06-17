@@ -8,11 +8,12 @@ class Grafo:
         self.dict[vertice] = {}
         return True
 
-    def agregar_arista(self, vertice1, vertice2, peso=1):
+    def agregar_arista(self, vertice1, vertice2, peso=1, bidireccional=True):
         if not self.__existen_vertices__([vertice1, vertice2]):
             return False
         self.dict[vertice1][vertice2] = peso
-        self.dict[vertice2][vertice1] = peso
+        if bidireccional:
+            self.dict[vertice2][vertice1] = peso
         return True
 
     def eliminar_arista(self, vertice1, vertice2):
