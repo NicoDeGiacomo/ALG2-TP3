@@ -1,6 +1,7 @@
 import sys
 import csv
 from grafo import Grafo
+import random
 
 
 # cat comandos.txt | python3 ./tp3.py asd.txt
@@ -49,8 +50,18 @@ def do_function(command, args, grafo):
 
 
 def similares(grafo, id, n):
-    print("Entro a func similares")
+    print("similares " + str(id) + " " + str(n))
+    aux = {}
+    for _ in range(100):
+        recorrido = random_walk(grafo, id, 20)
+        for v in recorrido:
+            if v in aux:
+                aux[v] += 1
+            else:
+                aux[v] = 1
 
+    # TODO: n mayores en aux -> Usar heap
+    pass
 
 def recomendar(grafo, id, n):
     print("Entro a func recomendar")
@@ -74,6 +85,17 @@ def estadisticas(grafo):
 
 def comunidades(grafo):
     print("Entro a func comunidades")
+
+
+def random_walk(grafo, id, pasos, recorrido=None):
+    if recorrido is None:
+        recorrido = []
+    if pasos == 0:
+        return recorrido
+    l = grafo.obtener_adyacentes(id)
+    e = random.choice(l)
+    recorrido.append(e)
+    return random_walk(grafo, e, pasos - 1, recorrido)
 
 
 if __name__ == "__main__":
