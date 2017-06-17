@@ -49,21 +49,21 @@ def do_function(command, args, grafo):
         return comunidades(grafo)
 
 
-def similares(grafo, id, n):
-    print("similares " + str(id) + " " + str(n))
+def similares(grafo, vertice, n):
+    print("similares " + str(vertice) + " " + str(n))
     aux = {}
     for _ in range(100):
-        recorrido = random_walk(grafo, id, 20)
+        recorrido = random_walk(grafo, vertice, 20)
         for v in recorrido:
             if v in aux:
                 aux[v] += 1
             else:
                 aux[v] = 1
 
-    # TODO: n mayores en aux -> Usar heap
+    # TODO: n mayores en aux -> Usar heap https://docs.python.org/3.0/library/heapq.html
     pass
 
-def recomendar(grafo, id, n):
+def recomendar(grafo, vertice, n):
     print("Entro a func recomendar")
 
 
@@ -75,7 +75,7 @@ def centralidad(grafo, n):
     print("Entro a func centralidad")
 
 
-def distancias(grafo, id):
+def distancias(grafo, vertice):
     print("Entro a func distancia")
 
 
