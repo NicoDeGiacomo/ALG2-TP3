@@ -2,6 +2,10 @@ import sys
 import csv
 from grafo import Grafo
 import random
+import heapq
+
+N_WALKS = 500
+WALKS_LARGE = 100
 
 
 # cat comandos.txt | python3 ./tp3.py asd.txt
@@ -13,7 +17,7 @@ def main():
 
     grafo = Grafo()
 
-    print("Loading file ...")
+    print("\nLoading file ...\n")
     with open(sys.argv[1], "r") as file:
         for _ in range(4):
             next(file)
@@ -24,7 +28,7 @@ def main():
             grafo.agregar_arista(line["a"], line["b"])
 
     # Leo por entrada standard
-    print("Reading commands ...")
+    print("Reading commands ...\n")
     for line in sys.stdin:
         comando = line.split(" ")
         do_function(comando[0], comando[1:], grafo)
@@ -49,42 +53,45 @@ def do_function(command, args, grafo):
         return comunidades(grafo)
 
 
-def similares(grafo, vertice, n):
-    print("similares " + str(vertice) + " " + str(n))
+def similares(grafo, vertice, k):
+    # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
+    imprimir_comando("similares", vertice, k)
     aux = {}
-    for _ in range(100):
-        recorrido = random_walk(grafo, vertice, 20)
+    for _ in range(N_WALKS):
+        recorrido = random_walk(grafo, vertice, WALKS_LARGE)
         for v in recorrido:
             if v in aux:
                 aux[v] += 1
             else:
                 aux[v] = 1
 
-    # TODO: n mayores en aux -> Usar heap https://docs.python.org/3.0/library/heapq.html
-    pass
+    aux.pop(vertice)
+    l = heapq.nlargest(int(k), aux, key=aux.get)
+    print(", ".join(map(str, l)), end="\n \n")
+
 
 def recomendar(grafo, vertice, n):
-    print("Entro a func recomendar")
+    imprimir_comando("recomendar", vertice, vertice, n)
 
 
 def camino(grafo, id1, id2):
-    print("Entro a func camino")
+    imprimir_comando("camino", id1, id2)
 
 
 def centralidad(grafo, n):
-    print("Entro a func centralidad")
+    imprimir_comando("centralidad", n)
 
 
 def distancias(grafo, vertice):
-    print("Entro a func distancia")
+    imprimir_comando("distancias", vertice)
 
 
 def estadisticas(grafo):
-    print("Entro a func estadisticas")
+    imprimir_comando("estadisticas")
 
 
 def comunidades(grafo):
-    print("Entro a func comunidades")
+    imprimir_comando("comunidades")
 
 
 def random_walk(grafo, id, pasos, recorrido=None):
@@ -96,6 +103,11 @@ def random_walk(grafo, id, pasos, recorrido=None):
     e = random.choice(l)
     recorrido.append(e)
     return random_walk(grafo, e, pasos - 1, recorrido)
+
+
+def imprimir_comando(command, *args):
+    print(command, end=" ")
+    print(" ".join(map(str, args)), end="")
 
 
 if __name__ == "__main__":
