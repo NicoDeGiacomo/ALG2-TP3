@@ -1,6 +1,6 @@
 similares 1 2
 recomendar 1 2
-camino 1 6928
+camino 1 2
 centralidad 2
 distancias 1
 estadisticas
