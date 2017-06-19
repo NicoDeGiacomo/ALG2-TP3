@@ -62,7 +62,7 @@ def do_function(command, args, grafo):
 def similares(grafo, vertice, k):
     # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
     imprimir_comando("similares", vertice, k)
-    aux = n_random_walks(grafo, vertice, k)
+    aux = n_random_walks(grafo, vertice)
     l = heapq.nlargest(int(k), aux, key=aux.get)
     # TODO: funcion para imprimir resultados (Tambien otra para imprimir errores?)
     print(", ".join(map(str, l)), end="\n \n")
@@ -71,7 +71,7 @@ def similares(grafo, vertice, k):
 def recomendar(grafo, vertice, k):
     # Tiempo igual a similares + un recorrido extra para eliminar adyacentes
     imprimir_comando("recomendar", vertice, k)
-    aux = n_random_walks(grafo, vertice, k)
+    aux = n_random_walks(grafo, vertice)
     new_data = {k: v for k, v in aux.items() if not grafo.son_adyacentes(k, vertice)}
     l = heapq.nlargest(int(k), new_data, key=new_data.get)
     print(", ".join(map(str, l)), end="\n \n")
@@ -89,6 +89,7 @@ def camino(grafo, id1, id2):
         print(" -> ".join(map(str, l)), end="\n \n")
 
 
+# centralidad_exacta 2
 def centralidad_exacta(grafo, n):
     imprimir_comando("centralidad_exacta", n)
     # Tiempo O( V*(E + V) ) (bfs por cada vertice)
@@ -104,6 +105,21 @@ def centralidad_exacta(grafo, n):
 
 def centralidad_aproximada(grafo, n):
     imprimir_comando("centralidad_aproximada", n)
+    ocurrencias = {}
+    for _ in range(50):
+        l = grafo.obtener_vertices()
+        e = random.choice(l)
+        aux = n_random_walks(grafo, e)
+        for k, v in aux.items():
+            if k in ocurrencias:
+                ocurrencias[k] += 1
+            else:
+                ocurrencias[k] = 1
+    li = heapq.nlargest(int(n), ocurrencias, key=ocurrencias.get)
+    if not li:
+        print("No path")
+    else:
+        print(", ".join(map(str, li)), end="\n \n")
 
 
 def distancias(grafo, vertice):
@@ -118,7 +134,7 @@ def comunidades(grafo):
     imprimir_comando("comunidades")
 
 
-def n_random_walks(grafo, vertice, k):
+def n_random_walks(grafo, vertice):
     aux = {}
     for _ in range(N_WALKS):
         recorrido = random_walk(grafo, vertice, WALKS_LARGE)
