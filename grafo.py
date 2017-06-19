@@ -14,6 +14,8 @@ class Grafo:
         self.dict[vertice1][vertice2] = peso
         if bidireccional:
             self.dict[vertice2][vertice1] = peso
+        else:
+            self.dict[vertice2][vertice1] = -peso
         return True
 
     def eliminar_arista(self, vertice1, vertice2):
@@ -30,7 +32,7 @@ class Grafo:
 
     def obtener_adyacentes(self, vertice):
         if not self.existe_vertice(vertice):
-            return None
+            return []
         return list(self.dict.get(vertice).keys())
 
     def existe_vertice(self, vertice):

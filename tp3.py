@@ -47,8 +47,10 @@ def do_function(command, args, grafo):
         return recomendar(grafo, args[0], args[1])
     if command == "camino":
         return camino(grafo, args[0], args[1])
-    if command == "centralidad":
-        return centralidad(grafo, args[0])
+    if command == "centralidad_exacta":
+        return centralidad_exacta(grafo, args[0])
+    if command == "centralidad_aproximada":
+        return centralidad_aproximada(grafo, args[0])
     if command == "distancias":
         return distancias(grafo, args[0])
     if command == "estadisticas":
@@ -80,12 +82,28 @@ def recomendar(grafo, vertice, k):
 def camino(grafo, id1, id2):
     # Tiempo O(E + V) (bfs)
     imprimir_comando("camino", id1, id2)
-    l = bfs(grafo, id1, id2[0])
-    print(" -> ".join(map(str, l)), end="\n \n")
+    l = bfs(grafo, id1, str(int(id2)))
+    if not l:
+        print("No path", end="\n \n")
+    else:
+        print(" -> ".join(map(str, l)), end="\n \n")
 
 
-def centralidad(grafo, n):
-    imprimir_comando("centralidad", n)
+def centralidad_exacta(grafo, n):
+    imprimir_comando("centralidad_exacta", n)
+    # Tiempo O( V*(E + V) ) (bfs por cada vertice)
+    ocurrencias = {}
+    count = 0
+    ocurrencias = all_bfs(grafo)
+    l = heapq.nlargest(int(n), ocurrencias, key=ocurrencias.get)
+    if not l:
+        print("No path")
+    else:
+        print(", ".join(map(str, l)), end="\n \n")
+
+
+def centralidad_aproximada(grafo, n):
+    imprimir_comando("centralidad_aproximada", n)
 
 
 def distancias(grafo, vertice):
@@ -115,6 +133,8 @@ def n_random_walks(grafo, vertice, k):
 
 
 # TODO: Poner esto en español y mas lindo
+# Recibe end -> Camino mas corto de start a end
+# No recibe end -> Camino mas corto de start a todos los nodos
 def bfs(graph_to_search, start, end):
     queue = deque([start])
     visited = set()
@@ -135,6 +155,37 @@ def bfs(graph_to_search, start, end):
                 queue.append(new_path)
             # Mark the vertex as visited
             visited.add(vertex)
+
+
+def all_bfs(graph_to_search):
+    paths = {}
+    for v in graph_to_search:
+        done = {}
+        queue = deque([v])
+        visited = set()
+        while queue:
+            # Gets the first path in the queue
+            path = queue.popleft()
+            # Gets the last node in the path
+            vertex = path[-1]
+            # Checks if we got to the end
+            if vertex not in done:
+                done[vertex] = True
+                for e in path:
+                    if e in paths:
+                        paths[e] += 1
+                    else:
+                        paths[e] = 1
+            # We check if the current node is already in the visited nodes set in order not to recheck it
+            if vertex not in visited:
+                # enumerate all adjacent nodes, construct a new path and push it into the queue
+                for current_neighbour in graph_to_search.obtener_adyacentes(vertex):
+                    new_path = list(path)
+                    new_path.append(current_neighbour)
+                    queue.append(new_path)
+                # Mark the vertex as visited
+                visited.add(vertex)
+    return paths
 
 
 def random_walk(grafo, id, pasos, recorrido=None):
