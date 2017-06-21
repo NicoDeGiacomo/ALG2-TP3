@@ -13,6 +13,11 @@ class Grafo:
     """
 
     def __init__(self, bidireccional=True):
+        """
+        Constructor del grafo.
+        :param bidireccional: (Opcional) - True si el diciconario es bidireccional. False en caso contrario.
+                                            Default-> True
+        """
         self.bidireccional = bidireccional
         self.dict = {}
         self.n_aristas = 0
@@ -144,7 +149,7 @@ class Grafo:
     def bfs(self, v=None):
         """
         Realiza un recorrido BFS sobre el grafo para todos los vertices (A menos que reciba un vertices específico)
-        :param v: Id del vertice de partida -> default: Se realiza BFS sobre todos los vertices
+        :param v: (Opcional) - Id del vertice de partida -> default: Se realiza BFS sobre todos los vertices
         :return:    * Map<String, String> - Un diccionario con los padres de cada vertice
                     * Map<String, Int> - Un diccionario con el orden de cada vertice
                     * Map<String, Int> - Un diccionario con las apariciones de cada vertice
