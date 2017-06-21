@@ -4,8 +4,6 @@ Alumnos: De Giacomo - Ponce
 Padrones: 99702 - 99723
 Corrector: Agustina Mendez
 """
-from __future__ import print_function
-
 import sys
 
 
@@ -41,7 +39,7 @@ def imprimir_error(mensaje):
     Imprime un mensaje de error
     :param mensaje: String - Mensaje de error
     """
-    print("Error: " + mensaje, file=sys.stderr, end="\n\n")
+    print("Error:", mensaje, file=sys.stderr, end="\n\n")
 
 
 def imprimir_distancias(distancias):
@@ -50,7 +48,7 @@ def imprimir_distancias(distancias):
     :param distancias: Map<Int, Int> - Mapa con una lista de nodos para cada distancia
     """
     for k, v in distancias.items():
-        print(str(k) + ": " + str(len(v)))
+        print(k, ":", len(v))
 
     print("", end="\n\n")
 
@@ -70,8 +68,18 @@ def imprimir_estadisticas(vertices, aristas):
     :param vertices: Int - Cantidad de vertices
     :param aristas: Int - Cantidad de aristas
     """
-    print("Cantidad de vértices: " + str(vertices))
-    print("Cantidad de aristas: " + str(aristas))
-    print("Promedio de grado de entrada de cada vértice: " + str(vertices / aristas))
-    print("Promedio de grado de entrada de cada vértice: " + str(vertices / aristas))
-    print("Densidad del grafo: " + str(aristas / (vertices * (vertices - 1))))
+    print("Cantidad de vértices:", vertices)
+    print("Cantidad de aristas:", aristas)
+    print("Promedio de grado de entrada de cada vértice:", vertices / aristas)
+    print("Promedio de grado de entrada de cada vértice:", vertices / aristas)
+    print("Densidad del grafo:", aristas / (vertices * (vertices - 1)))
+
+
+def imprimir_comunidad(comunidad, integrantes):
+    """
+    Imrpime los labels de las comunidades, la cantidad de integrantes y la lista de los integrantes.
+    :param comunidad: String - Label de la comunidad.
+    :param integrantes: List<String> - Ids de los vertices que integran la comunidad.
+    """
+    print("Comunidad", comunidad, " --> Integrantes:", len(integrantes), "-->", integrantes)
+    print("", end="\n\n")

@@ -17,10 +17,11 @@ LABEL_ITER = 10
 LABEL_WALKS_LARGE = 30
 
 
-# cat comandos.txt | python3 ./tp3.py asd.txt
 def main():
-    # TODO: SACAR ESTA BAZOFIA
-    sys.stdin = open('comandos.txt')
+    """
+    Lee el archivo que recive en los argumentos y carga el grafo.
+    Lee los comandos de a uno y ejecuta la función correspondiente.
+    """
 
     if len(sys.argv) != 2:
         imprimir_error("-Please provide 1 arguments-")
@@ -48,7 +49,13 @@ def main():
 
 def do_function(command, args, grafo):
     # todo imprimir errores en la cantidad de argumentos
-    # toto imprimir la salida tambien en esta funcion
+    # todo imprimir la salida tambien en esta funcion
+    """
+    Recibe un comando a ejecutar y llama a la función correspondiente.
+    :param command: String - Comando a ejecutar.
+    :param args: List<String> - Lista de parámetros para la ejecución del comando.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar el comando.
+    """
     if command == "similares":
         imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
         similares(grafo, str(args[0]).rstrip(), int(args[1]))
@@ -77,6 +84,12 @@ def do_function(command, args, grafo):
 
 # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
 def similares(grafo, vertice, k):
+    """
+    Dado un vertice, encuentra los vertices más similares a este.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice: String - Id de un vertice.
+    :param k: Int - Cantidad de similares a buscar.
+    """
     aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
     lista = heapq.nlargest(k, aux, key=aux.get)
     imprimir_nodos(lista)
@@ -84,6 +97,12 @@ def similares(grafo, vertice, k):
 
 # Tiempo igual a similares + un recorrido extra para eliminar adyacentes
 def recomendar(grafo, vertice, k):
+    """
+    Dado un vertice, encuentra los vertices más similares a este con los cuales no tiene relación.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice: String - Id de un vertice.
+    :param k: Int - Cantidad de similares a buscar.
+    """
     aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
     result = {k: v for k, v in aux.items() if not grafo.son_adyacentes(k, vertice)}
     lista = heapq.nlargest(k, result, key=result.get)
@@ -92,6 +111,12 @@ def recomendar(grafo, vertice, k):
 
 # Tiempo O(E + V) (bfs)
 def camino(grafo, vertice1, vertice2):
+    """
+    Busca el camino más corto para llegar desde vertice1 hasta vertice2.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice1: String - Id del vertice de partida.
+    :param vertice2: String - Id del vertice de llegada.
+    """
     lista = grafo.camino_minimo(vertice1, vertice2)
     if lista:
         imprimir_camino(lista)
@@ -100,12 +125,23 @@ def camino(grafo, vertice1, vertice2):
 
 
 def centralidad_exacta(grafo, n):
+    """
+    Busca los vertices que aparecen más veces entre todos los caminos mínimos existentes en el grafo.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param n: Int - Cantidad de vertices a buscar.
+    """
     _, _, apariciones = grafo.bfs()
     lista = heapq.nlargest(n, apariciones, key=apariciones.get)
     imprimir_nodos(lista)
 
 
 def centralidad_aproximada(grafo, n):
+    """
+    Busca una aproximación de los vertices que aparecen más veces
+        entre todos los caminos mínimos existentes en el grafo.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param n: Int - Cantidad de vertices a buscar.
+    """
     ocurrencias = {}
     for _ in range(N_RANDOM_CHOICE):
         vertices = grafo.obtener_vertices()
@@ -120,6 +156,12 @@ def centralidad_aproximada(grafo, n):
 
 
 def distancias(grafo, vertice):
+    """
+    Dado un vertice, obtiene los vertices que se encuentran a cada una de las distancias posibles,
+        considerando las distancias como la cantidad de saltos.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice: String - Id del vertice de partida.
+    """
     _, orden, _ = grafo.bfs(vertice)
 
     dist = {}
@@ -132,10 +174,23 @@ def distancias(grafo, vertice):
 
 
 def estadisticas(grafo):
+    """
+    Obtiene algunas estadisticas del grafo:
+        *Cantidad de vértices.
+        *Cantidad de aristas.
+        *Promedio de grado de entrada de cada vértice.
+        *Promedio de grado de entrada de cada vértice.
+        *Densidad del grafo.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    """
     imprimir_estadisticas(grafo.cantidad_vertices(), grafo.cantidad_aristas())
 
 
 def comunidades(grafo):
+    """
+    Busca las comunidades que se encuentren en el grafo. Utilizando el algoritmo de label propagation
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    """
     label = {}
 
     i = 1
@@ -144,8 +199,7 @@ def comunidades(grafo):
         i += 1
 
     for _ in range(LABEL_ITER):
-        recorrido = []
-        random_walk(grafo, random.choice(grafo.obtener_vertices()), LABEL_WALKS_LARGE, recorrido)
+        recorrido = random_walk(grafo, random.choice(grafo.obtener_vertices()), LABEL_WALKS_LARGE)
         for e in recorrido:
             etiquetas_adyacentes = [label[e] for e in grafo.obtener_adyacentes(e)]
             # + random.random() -> Para que max() elija uno random en caso de empate
@@ -161,11 +215,19 @@ def comunidades(grafo):
     for k, v in comunidad.items():
         if len(v) > 2000 or len(v) < 4:
             continue
-        print("Comunidad " + k + ": Integrantes: " + str(len(v)) + "--> " + str(v))
+        imprimir_comunidad(k, v)
 
 
 # Realiza n random walks y devuelve un mapa con la cuenta de las veces que aprecio cada nodo
 def n_random_walks(grafo, vertice, n, pasos):
+    """
+    Realiza n random walks y cuenta las apariciones de cada nodo.
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice: String - Id del vertice de partida.
+    :param n: Int - Cantidad de random walks a ejecutar.
+    :param pasos: Int - Cantidad de pasos de cada random walk.
+    :return: Map<String, Int> - las apariciones de cada nodo.
+    """
     aux = {}
     for _ in range(n):
         recorrido = random_walk(grafo, vertice, pasos)
@@ -175,18 +237,31 @@ def n_random_walks(grafo, vertice, n, pasos):
             else:
                 aux[v] = 1
 
+    if vertice in aux:
+        aux.pop(vertice)
     return aux
 
 
-def random_walk(grafo, id, pasos, recorrido=None):
+def random_walk(grafo, vertice, pasos):
+    """
+
+    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :param vertice: String - Id del vertice de partida.
+    :param pasos: Int - Cantidad de pasos del random walk.
+    :return: El recorrido del random walk
+    """
+    return __aux_random_walk(grafo, vertice, pasos, [])
+
+
+def __aux_random_walk(grafo, vertice, pasos, recorrido):
     if recorrido is None:
         recorrido = []
     if pasos == 0:
         return recorrido
-    l = grafo.obtener_adyacentes(id)
+    l = grafo.obtener_adyacentes(vertice)
     e = random.choice(l)
     recorrido.append(e)
-    return random_walk(grafo, e, pasos - 1, recorrido)
+    return __aux_random_walk(grafo, e, pasos - 1, recorrido)
 
 
 if __name__ == "__main__":
