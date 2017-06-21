@@ -1,7 +1,1 @@
-similares 1 2
-recomendar 1 2
-camino 1 316220
-centralidad_aproximada 2
-distancias 1
-estadisticas
 comunidades

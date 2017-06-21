@@ -1,28 +1,36 @@
-import sys
+# coding=utf-8
+"""
+Alumnos: De Giacomo - Ponce
+Padrones: 99702 - 99723
+Corrector: Agustina Mendez
+"""
 import csv
 from grafo import Grafo
 import random
 import heapq
-from collections import deque
+from salida import *
 
-N_WALKS = 500
-WALKS_LARGE = 100
+N_WALKS = 100
+WALKS_LARGE = 300
+N_RANDOM_CHOICE = 20
+LABEL_ITER = 10
+LABEL_WALKS_LARGE = 30
 
 
 # cat comandos.txt | python3 ./tp3.py asd.txt
 def main():
     # TODO: SACAR ESTA BAZOFIA
-    sys.stdin = open('comandos.txt', 'r')
+    sys.stdin = open('comandos.txt')
 
     if len(sys.argv) != 2:
-        print("-Please provide 1 arguments-", file=sys.stderr)
-        print("-Usage: tp3.py <inputfile>", file=sys.stderr)
+        imprimir_error("-Please provide 1 arguments-")
+        imprimir_error("-Usage: tp3.py <inputfile>")
         sys.exit(2)
 
     grafo = Grafo()
 
-    print("\nLoading file ...\n")
-    with open(sys.argv[1], "r") as file:
+    imprimir_mensaje("Loading file ...")
+    with open(sys.argv[1]) as file:
         for _ in range(4):
             next(file)
         reader = csv.DictReader(file, delimiter="\t", fieldnames=["a", "b"])
@@ -32,176 +40,142 @@ def main():
             grafo.agregar_arista(line["a"], line["b"])
 
     # Leo por entrada standard
-    print("Reading commands ...\n")
+    imprimir_mensaje("Reading commands ...")
     for line in sys.stdin:
         comando = line.split(" ")
         do_function(comando[0], comando[1:], grafo)
 
 
 def do_function(command, args, grafo):
-    # TODO: Hay que checkear los parametros ?
-
+    # todo imprimir errores en la cantidad de argumentos
+    # toto imprimir la salida tambien en esta funcion
     if command == "similares":
-        return similares(grafo, args[0], args[1])
+        imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
+        similares(grafo, str(args[0]).rstrip(), int(args[1]))
     if command == "recomendar":
-        return recomendar(grafo, args[0], args[1])
+        imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
+        recomendar(grafo, str(args[0]).rstrip(), int(args[1]))
     if command == "camino":
-        return camino(grafo, args[0], args[1])
+        imprimir_comando("camino", str(args[0]).rstrip(), str(args[1]).rstrip())
+        camino(grafo, str(args[0]).rstrip(), str(args[1]).rstrip())
     if command == "centralidad_exacta":
-        return centralidad_exacta(grafo, args[0])
+        imprimir_comando("centralidad_exacta", int(args[0]))
+        centralidad_exacta(grafo, int(args[0]))
     if command == "centralidad_aproximada":
-        return centralidad_aproximada(grafo, args[0])
+        imprimir_comando("centralidad_aproximada", int(args[0]))
+        centralidad_aproximada(grafo, int(args[0]))
     if command == "distancias":
-        return distancias(grafo, args[0])
+        imprimir_comando("distancias", str(args[0]).rstrip())
+        distancias(grafo, str(args[0]).rstrip())
     if command == "estadisticas":
-        return estadisticas(grafo)
+        imprimir_comando("estadisticas")
+        estadisticas(grafo)
     if command == "comunidades":
-        return comunidades(grafo)
+        imprimir_comando("comunidades")
+        comunidades(grafo)
 
 
+# Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
 def similares(grafo, vertice, k):
-    # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
-    imprimir_comando("similares", vertice, k)
-    aux = n_random_walks(grafo, vertice)
-    l = heapq.nlargest(int(k), aux, key=aux.get)
-    # TODO: funcion para imprimir resultados (Tambien otra para imprimir errores?)
-    print(", ".join(map(str, l)), end="\n \n")
+    aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
+    lista = heapq.nlargest(k, aux, key=aux.get)
+    imprimir_nodos(lista)
 
 
+# Tiempo igual a similares + un recorrido extra para eliminar adyacentes
 def recomendar(grafo, vertice, k):
-    # Tiempo igual a similares + un recorrido extra para eliminar adyacentes
-    imprimir_comando("recomendar", vertice, k)
-    aux = n_random_walks(grafo, vertice)
-    new_data = {k: v for k, v in aux.items() if not grafo.son_adyacentes(k, vertice)}
-    l = heapq.nlargest(int(k), new_data, key=new_data.get)
-    print(", ".join(map(str, l)), end="\n \n")
+    aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
+    result = {k: v for k, v in aux.items() if not grafo.son_adyacentes(k, vertice)}
+    lista = heapq.nlargest(k, result, key=result.get)
+    imprimir_nodos(lista)
 
 
-# TODO: SACAR TODOS LOS \N A LOS PARAMETROS
-# TODO: CASO DE QUE NO TRAIGA NADA BFS (NO SE CONECTAN) -> CHECKEAR QUE EXISTAN AMBOS ANTES AL MENOS ? Y QUE ESTEN CONECTADOS?
-def camino(grafo, id1, id2):
-    # Tiempo O(E + V) (bfs)
-    imprimir_comando("camino", id1, id2)
-    l = bfs(grafo, id1, str(int(id2)))
-    if not l:
-        print("No path", end="\n \n")
+# Tiempo O(E + V) (bfs)
+def camino(grafo, vertice1, vertice2):
+    lista = grafo.camino_minimo(vertice1, vertice2)
+    if lista:
+        imprimir_camino(lista)
     else:
-        print(" -> ".join(map(str, l)), end="\n \n")
+        imprimir_error("Los vertices no se unen.")
 
 
-# centralidad_exacta 2
 def centralidad_exacta(grafo, n):
-    imprimir_comando("centralidad_exacta", n)
-    # Tiempo O( V*(E + V) ) (bfs por cada vertice)
-    ocurrencias = {}
-    count = 0
-    ocurrencias = all_bfs(grafo)
-    l = heapq.nlargest(int(n), ocurrencias, key=ocurrencias.get)
-    if not l:
-        print("No path")
-    else:
-        print(", ".join(map(str, l)), end="\n \n")
+    _, _, apariciones = grafo.bfs()
+    lista = heapq.nlargest(n, apariciones, key=apariciones.get)
+    imprimir_nodos(lista)
 
 
 def centralidad_aproximada(grafo, n):
-    imprimir_comando("centralidad_aproximada", n)
     ocurrencias = {}
-    for _ in range(50):
-        l = grafo.obtener_vertices()
-        e = random.choice(l)
-        aux = n_random_walks(grafo, e)
+    for _ in range(N_RANDOM_CHOICE):
+        vertices = grafo.obtener_vertices()
+        v = random.choice(vertices)
+        aux = n_random_walks(grafo, v, N_WALKS, WALKS_LARGE)
         for k, v in aux.items():
-            if k in ocurrencias:
-                ocurrencias[k] += 1
-            else:
+            if k not in ocurrencias:
                 ocurrencias[k] = 1
-    li = heapq.nlargest(int(n), ocurrencias, key=ocurrencias.get)
-    if not li:
-        print("No path")
-    else:
-        print(", ".join(map(str, li)), end="\n \n")
+            ocurrencias[k] += 1
+    lista = heapq.nlargest(n, ocurrencias, key=ocurrencias.get)
+    imprimir_nodos(lista)
 
 
 def distancias(grafo, vertice):
-    imprimir_comando("distancias", vertice)
+    _, orden, _ = grafo.bfs(vertice)
+
+    dist = {}
+    for k, v in orden.items():
+        if v not in dist:
+            dist[v] = []
+        dist[v].append(k)
+
+    imprimir_distancias(dist)
 
 
 def estadisticas(grafo):
-    imprimir_comando("estadisticas")
+    imprimir_estadisticas(grafo.cantidad_vertices(), grafo.cantidad_aristas())
 
 
 def comunidades(grafo):
-    imprimir_comando("comunidades")
+    label = {}
+
+    i = 1
+    for v in grafo:
+        label[v] = str(i)
+        i += 1
+
+    for _ in range(LABEL_ITER):
+        recorrido = []
+        random_walk(grafo, random.choice(grafo.obtener_vertices()), LABEL_WALKS_LARGE, recorrido)
+        for e in recorrido:
+            etiquetas_adyacentes = [label[e] for e in grafo.obtener_adyacentes(e)]
+            # + random.random() -> Para que max() elija uno random en caso de empate
+            # (Se suma un numero < 1 por lo que no cambia el resultado)
+            label[e] = max(etiquetas_adyacentes, key=lambda x: etiquetas_adyacentes.count(x) + random.random())
+
+    comunidad = {}
+    for k, v in label.items():
+        if v not in comunidad:
+            comunidad[v] = []
+        comunidad[v].append(k)
+
+    for k, v in comunidad.items():
+        if len(v) > 2000 or len(v) < 4:
+            continue
+        print("Comunidad " + k + ": Integrantes: " + str(len(v)) + "--> " + str(v))
 
 
-def n_random_walks(grafo, vertice):
+# Realiza n random walks y devuelve un mapa con la cuenta de las veces que aprecio cada nodo
+def n_random_walks(grafo, vertice, n, pasos):
     aux = {}
-    for _ in range(N_WALKS):
-        recorrido = random_walk(grafo, vertice, WALKS_LARGE)
+    for _ in range(n):
+        recorrido = random_walk(grafo, vertice, pasos)
         for v in recorrido:
             if v in aux:
                 aux[v] += 1
             else:
                 aux[v] = 1
 
-    aux.pop(vertice)
     return aux
-
-
-# TODO: Poner esto en español y mas lindo
-# Recibe end -> Camino mas corto de start a end
-# No recibe end -> Camino mas corto de start a todos los nodos
-def bfs(graph_to_search, start, end):
-    queue = deque([start])
-    visited = set()
-    while queue:
-        # Gets the first path in the queue
-        path = queue.popleft()
-        # Gets the last node in the path
-        vertex = path[-1]
-        # Checks if we got to the end
-        if vertex == end:
-            return path
-        # We check if the current node is already in the visited nodes set in order not to recheck it
-        elif vertex not in visited:
-            # enumerate all adjacent nodes, construct a new path and push it into the queue
-            for current_neighbour in graph_to_search.obtener_adyacentes(vertex):
-                new_path = list(path)
-                new_path.append(current_neighbour)
-                queue.append(new_path)
-            # Mark the vertex as visited
-            visited.add(vertex)
-
-
-def all_bfs(graph_to_search):
-    paths = {}
-    for v in graph_to_search:
-        done = {}
-        queue = deque([v])
-        visited = set()
-        while queue:
-            # Gets the first path in the queue
-            path = queue.popleft()
-            # Gets the last node in the path
-            vertex = path[-1]
-            # Checks if we got to the end
-            if vertex not in done:
-                done[vertex] = True
-                for e in path:
-                    if e in paths:
-                        paths[e] += 1
-                    else:
-                        paths[e] = 1
-            # We check if the current node is already in the visited nodes set in order not to recheck it
-            if vertex not in visited:
-                # enumerate all adjacent nodes, construct a new path and push it into the queue
-                for current_neighbour in graph_to_search.obtener_adyacentes(vertex):
-                    new_path = list(path)
-                    new_path.append(current_neighbour)
-                    queue.append(new_path)
-                # Mark the vertex as visited
-                visited.add(vertex)
-    return paths
 
 
 def random_walk(grafo, id, pasos, recorrido=None):
@@ -213,11 +187,6 @@ def random_walk(grafo, id, pasos, recorrido=None):
     e = random.choice(l)
     recorrido.append(e)
     return random_walk(grafo, e, pasos - 1, recorrido)
-
-
-def imprimir_comando(command, *args):
-    print(command, end=" ")
-    print(" ".join(map(str, args)), end="")
 
 
 if __name__ == "__main__":
