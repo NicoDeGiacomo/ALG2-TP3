@@ -71,7 +71,7 @@ def imprimir_estadisticas(vertices, aristas):
     print("Cantidad de aristas:", aristas)
     print("Promedio de grado de entrada de cada vértice:", vertices / aristas)
     print("Promedio de grado de entrada de cada vértice:", vertices / aristas)
-    print("Densidad del grafo:", aristas / (vertices * (vertices - 1)))
+    print("Densidad del grafo:", aristas / (vertices * (vertices - 1)), end="\n\n")
 
 
 def imprimir_comunidad(comunidad, integrantes):

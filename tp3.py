@@ -23,6 +23,8 @@ def main():
     Lee los comandos de a uno y ejecuta la función correspondiente.
     """
 
+    sys.stdin = open("comandos.txt")
+
     if len(sys.argv) != 2:
         imprimir_error("-Please provide 1 arguments-")
         imprimir_error("-Usage: tp3.py <inputfile>")
@@ -48,14 +50,13 @@ def main():
 
 
 def do_function(command, args, grafo):
-    # todo imprimir errores en la cantidad de argumentos
-    # todo imprimir la salida tambien en esta funcion
     """
     Recibe un comando a ejecutar y llama a la función correspondiente.
     :param command: String - Comando a ejecutar.
     :param args: List<String> - Lista de parámetros para la ejecución del comando.
     :param grafo: Grafo - Grafo sobre el cual ejecutar el comando.
     """
+    command = str(command).rstrip()
     if command == "similares":
         if len(args) != 2:
             imprimir_error("-similares requiere 2 parametros-")
@@ -63,6 +64,7 @@ def do_function(command, args, grafo):
         imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
         lista = similares(grafo, str(args[0]).rstrip(), int(args[1]))
         imprimir_nodos(lista)
+        return
 
     if command == "recomendar":
         if len(args) != 2:
@@ -71,6 +73,7 @@ def do_function(command, args, grafo):
         imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
         lista = recomendar(grafo, str(args[0]).rstrip(), int(args[1]))
         imprimir_nodos(lista)
+        return
 
     if command == "camino":
         if len(args) != 2:
@@ -82,6 +85,7 @@ def do_function(command, args, grafo):
             imprimir_camino(lista)
         else:
             imprimir_error("Los vertices no se unen.")
+            return
 
     if command == "centralidad_exacta":
         if len(args) != 1:
@@ -90,6 +94,7 @@ def do_function(command, args, grafo):
         imprimir_comando("centralidad_exacta", int(args[0]))
         lista = centralidad_exacta(grafo, int(args[0]))
         imprimir_nodos(lista)
+        return
 
     if command == "centralidad_aproximada":
         if len(args) != 1:
@@ -98,6 +103,7 @@ def do_function(command, args, grafo):
         imprimir_comando("centralidad_aproximada", int(args[0]))
         lista = centralidad_aproximada(grafo, int(args[0]))
         imprimir_nodos(lista)
+        return
 
     if command == "distancias":
         if len(args) != 1:
@@ -106,6 +112,7 @@ def do_function(command, args, grafo):
         imprimir_comando("distancias", str(args[0]).rstrip())
         dist = distancias(grafo, str(args[0]).rstrip())
         imprimir_distancias(dist)
+        return
 
     if command == "estadisticas":
         if len(args) != 0:
@@ -114,6 +121,7 @@ def do_function(command, args, grafo):
         imprimir_comando("estadisticas")
         vertices, aristas = estadisticas(grafo)
         imprimir_estadisticas(vertices, aristas)
+        return
 
     if command == "comunidades":
         if len(args) != 0:
@@ -125,6 +133,9 @@ def do_function(command, args, grafo):
             if len(v) > 2000 or len(v) < 4:
                 continue
             imprimir_comunidad(k, v)
+        return
+
+    imprimir_error("El comando indicado no fue reconocido: " + str(command))
 
 
 # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
@@ -192,9 +203,7 @@ def centralidad_aproximada(grafo, n):
     """
     ocurrencias = {}
     for _ in range(N_RANDOM_CHOICE):
-        vertices = grafo.obtener_vertices()
-        v = random.choice(vertices)
-        aux = n_random_walks(grafo, v, N_WALKS, WALKS_LARGE)
+        aux = n_random_walks(grafo, grafo.vertice_aleatorio(), N_WALKS, WALKS_LARGE)
         for k, v in aux.items():
             if k not in ocurrencias:
                 ocurrencias[k] = 1
@@ -247,7 +256,8 @@ def comunidades(grafo):
         i += 1
 
     for _ in range(LABEL_ITER):
-        recorrido = random_walk(grafo, random.choice(grafo.obtener_vertices()), LABEL_WALKS_LARGE)
+        # Establezco un recorrido random para cada iteración, empezando en un vertice random.
+        recorrido = grafo.random_walk(LABEL_WALKS_LARGE)
         for e in recorrido:
             etiquetas_adyacentes = [label[e] for e in grafo.obtener_adyacentes(e)]
             # + random.random() -> Para que max() elija uno random en caso de empate
@@ -275,7 +285,7 @@ def n_random_walks(grafo, vertice, n, pasos):
     """
     aux = {}
     for _ in range(n):
-        recorrido = random_walk(grafo, vertice, pasos)
+        recorrido = grafo.random_walk(pasos, vertice)
         for v in recorrido:
             if v in aux:
                 aux[v] += 1
@@ -285,28 +295,6 @@ def n_random_walks(grafo, vertice, n, pasos):
     if vertice in aux:
         aux.pop(vertice)
     return aux
-
-
-def random_walk(grafo, vertice, pasos):
-    """
-
-    :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
-    :param vertice: String - Id del vertice de partida.
-    :param pasos: Int - Cantidad de pasos del random walk.
-    :return: El recorrido del random walk
-    """
-    return __aux_random_walk(grafo, vertice, pasos, [])
-
-
-def __aux_random_walk(grafo, vertice, pasos, recorrido):
-    if recorrido is None:
-        recorrido = []
-    if pasos == 0:
-        return recorrido
-    l = grafo.obtener_adyacentes(vertice)
-    e = random.choice(l)
-    recorrido.append(e)
-    return __aux_random_walk(grafo, e, pasos - 1, recorrido)
 
 
 if __name__ == "__main__":

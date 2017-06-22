@@ -5,11 +5,13 @@ Padrones: 99702 - 99723
 Corrector: Agustina Mendez
 """
 from collections import deque
+from randomdict import RandomDict
 
 
 class Grafo:
     """
     TDA grafo. Implementado como diccionario de diccionarios.
+    (Utilizando RandomDict para la mejor eficiencia de los random walks)
     """
 
     def __init__(self, bidireccional=True):
@@ -19,7 +21,7 @@ class Grafo:
                                             Default-> True
         """
         self.bidireccional = bidireccional
-        self.dict = {}
+        self.dict = RandomDict()
         self.n_aristas = 0
 
     def agregar_vertice(self, vertice):
@@ -28,9 +30,23 @@ class Grafo:
         :param vertice: String - Id del vertice a insertar.
         :return: True si se agrego correctamente. False en caso contrario.
         """
-        if vertice in self.dict:
+        if self._existen_vertices([vertice]):
             return False
-        self.dict[vertice] = {}
+        self.dict[vertice] = RandomDict()
+        return True
+
+    def eliminar_vertice(self, vertice):
+        """
+        Elimina un vertice del grafo.
+        :param vertice: String - Id del vertice a eliminar.
+        :return: True si se eliminó correctamente. False en caso contrario.
+        """
+        if not self._existen_vertices([vertice]):
+            return False
+
+        for k in self.dict.pop(vertice):
+            if vertice in self.dict[k]:
+                self.dict[k].pop(vertice)
         return True
 
     def agregar_arista(self, vertice1, vertice2, peso=1):
@@ -53,10 +69,10 @@ class Grafo:
 
     def eliminar_arista(self, vertice1, vertice2):
         """
-        Elimina una arista.
+        Elimina una arista al grafo.
         :param vertice1: String - Id del vertice de salida.
         :param vertice2: String - Id del vertice de entrada.
-        :return: True si se elimino correctamente. False en caso contrario.
+        :return: True si se eliminó correctamente. False en caso contrario.
         """
         if not self._existen_vertices([vertice1, vertice2]):
             return False
@@ -83,9 +99,9 @@ class Grafo:
         :param vertice: String - Id de un vertice.
         :return: List<String> - Lista de los ids de los vertices adyacentes.
         """
-        if not self.existe_vertice(vertice):
+        if not self._existen_vertices([vertice]):
             return []
-        return list(self.dict.get(vertice).keys())
+        return list(self.dict.get(vertice))
 
     def existe_vertice(self, vertice):
         """
@@ -93,14 +109,14 @@ class Grafo:
         :param vertice: String - Id de un vertice.
         :return: True en caso afirmativo. False en caso contrario.
         """
-        return vertice in self.dict
+        return self._existen_vertices([vertice])
 
     def obtener_vertices(self):
         """
         Obtiene todos los vertices del grafo.
         :return: List<String> - Lista con los ids de todos los vertices.
         """
-        return list(self.dict.keys())
+        return list(self.dict)
 
     def cantidad_vertices(self):
         """
@@ -122,9 +138,37 @@ class Grafo:
 
     def _existen_vertices(self, vertices):
         for v in vertices:
-            if not self.existe_vertice(v):
+            if v not in self.dict:
                 return False
         return True
+
+    def vertice_aleatorio(self):
+        """
+        Retorna un vértice aleatorio en O(1).
+        :return: String - Id de un vértice aleatorio.
+        """
+        return self.dict.random_key()
+
+    def random_walk(self, pasos, vertice=None):
+        """
+        Realiza un recorrido random dentro del grafo. Si no se recibe un vertice se parte de uno tambien random.
+        :param vertice: (Opcional) String - Id del vertice de partida.
+        :param pasos: Int - Cantidad de pasos del random walk.
+        :return: El recorrido del random walk.
+        """
+        if not vertice:
+            vertice = self.dict.random_key()
+        return self.__aux_random_walk(vertice, pasos, [])
+
+    def __aux_random_walk(self, vertice, pasos, recorrido):
+        if recorrido is None:
+            recorrido = []
+        if pasos == 0:
+            return recorrido
+        # Obtengo un vertice adyacente random en O(1)
+        v = self.dict[vertice].random_key()
+        recorrido.append(v)
+        return self.__aux_random_walk(v, pasos - 1, recorrido)
 
     def camino_minimo(self, v, w):
         """
