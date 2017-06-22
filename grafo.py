@@ -123,7 +123,7 @@ class Grafo:
         Devuelve la cantidad de vertices en el grafo.
         :return: Int - Cantidad de vertices en el grafo.
         """
-        return len(self.obtener_vertices())
+        return len(self.dict)
 
     def cantidad_aristas(self):
         """

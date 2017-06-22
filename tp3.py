@@ -138,7 +138,6 @@ def do_function(command, args, grafo):
     imprimir_error("El comando indicado no fue reconocido: " + str(command))
 
 
-# Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
 def similares(grafo, vertice, k):
     """
     Dado un vertice, encuentra los vertices más similares a este.
@@ -152,7 +151,6 @@ def similares(grafo, vertice, k):
     return lista
 
 
-# Tiempo igual a similares + un recorrido extra para eliminar adyacentes
 def recomendar(grafo, vertice, k):
     """
     Dado un vertice, encuentra los vertices más similares a este con los cuales no tiene relación.
@@ -167,7 +165,6 @@ def recomendar(grafo, vertice, k):
     return lista
 
 
-# Tiempo O(E + V) (bfs)
 def camino(grafo, vertice1, vertice2):
     """
     Busca el camino más corto para llegar desde vertice1 hasta vertice2.
@@ -181,34 +178,29 @@ def camino(grafo, vertice1, vertice2):
     return lista
 
 
-def centralidad_exacta(grafo, n):
+def centralidad_exacta(grafo, k):
     """
     Busca los vertices que aparecen más veces entre todos los caminos mínimos existentes en el grafo.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
-    :param n: Int - Cantidad de vertices a buscar.
+    :param k: Int - Cantidad de vertices a buscar.
     :return: List - Lista con los ids de los n vertices mas centrales.
     """
     _, _, apariciones = grafo.bfs()
-    lista = heapq.nlargest(n, apariciones, key=apariciones.get)
+    lista = heapq.nlargest(k, apariciones, key=apariciones.get)
     return lista
 
 
-def centralidad_aproximada(grafo, n):
+def centralidad_aproximada(grafo, k):
     """
-    Busca una aproximación de los vertices que aparecen más veces
-        entre todos los caminos mínimos existentes en el grafo.
+    Busca una aproximación de los vertices mas centrales.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
-    :param n: Int - Cantidad de vertices a buscar.
+    :param k: Int - Cantidad de vertices a buscar.
     :return: List - Lista con los ids de los n vertices mas centrales.
     """
-    ocurrencias = {}
+    aux = {}
     for _ in range(N_RANDOM_CHOICE):
         aux = n_random_walks(grafo, grafo.vertice_aleatorio(), N_WALKS, WALKS_LARGE)
-        for k, v in aux.items():
-            if k not in ocurrencias:
-                ocurrencias[k] = 1
-            ocurrencias[k] += 1
-    lista = heapq.nlargest(n, ocurrencias, key=ocurrencias.get)
+    lista = heapq.nlargest(k, aux, key=aux.get)
     return lista
 
 
@@ -222,6 +214,7 @@ def distancias(grafo, vertice):
     """
     _, orden, _ = grafo.bfs(vertice)
 
+    # Invierto el diccionario para obtener los vertices a cada distancia
     dist = {}
     for k, v in orden.items():
         if v not in dist:
@@ -244,7 +237,7 @@ def estadisticas(grafo):
 
 def comunidades(grafo):
     """
-    Busca las comunidades que se encuentren en el grafo. Utilizando el algoritmo de label propagation
+    Busca las comunidades que se encuentren en el grafo, utilizando el algoritmo de label propagation.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :return: Map<String, List<String>> - Mapa con una lista de ids de vertices para cada label de una comunidad
     """
