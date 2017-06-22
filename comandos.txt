@@ -1,1 +1,8 @@
+similares 1 3
+recomendar 1 3
+camino 1 853
+centralidad_exacta 3
+centralidad_aproximada 3
+distancias 1
+estadisticas
 comunidades

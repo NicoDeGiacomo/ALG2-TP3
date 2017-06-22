@@ -57,29 +57,74 @@ def do_function(command, args, grafo):
     :param grafo: Grafo - Grafo sobre el cual ejecutar el comando.
     """
     if command == "similares":
+        if len(args) != 2:
+            imprimir_error("-similares requiere 2 parametros-")
+            return
         imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
-        similares(grafo, str(args[0]).rstrip(), int(args[1]))
+        lista = similares(grafo, str(args[0]).rstrip(), int(args[1]))
+        imprimir_nodos(lista)
+
     if command == "recomendar":
+        if len(args) != 2:
+            imprimir_error("-recomendar requiere 2 parametros-")
+            return
         imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
-        recomendar(grafo, str(args[0]).rstrip(), int(args[1]))
+        lista = recomendar(grafo, str(args[0]).rstrip(), int(args[1]))
+        imprimir_nodos(lista)
+
     if command == "camino":
+        if len(args) != 2:
+            imprimir_error("-camino requiere 2 parametros-")
+            return
         imprimir_comando("camino", str(args[0]).rstrip(), str(args[1]).rstrip())
-        camino(grafo, str(args[0]).rstrip(), str(args[1]).rstrip())
+        lista = camino(grafo, str(args[0]).rstrip(), str(args[1]).rstrip())
+        if lista:
+            imprimir_camino(lista)
+        else:
+            imprimir_error("Los vertices no se unen.")
+
     if command == "centralidad_exacta":
+        if len(args) != 1:
+            imprimir_error("-centralidad_exacta requiere 1 parametro-")
+            return
         imprimir_comando("centralidad_exacta", int(args[0]))
-        centralidad_exacta(grafo, int(args[0]))
+        lista = centralidad_exacta(grafo, int(args[0]))
+        imprimir_nodos(lista)
+
     if command == "centralidad_aproximada":
+        if len(args) != 1:
+            imprimir_error("-centralidad_aproximada requiere 1 parametro-")
+            return
         imprimir_comando("centralidad_aproximada", int(args[0]))
-        centralidad_aproximada(grafo, int(args[0]))
+        lista = centralidad_aproximada(grafo, int(args[0]))
+        imprimir_nodos(lista)
+
     if command == "distancias":
+        if len(args) != 1:
+            imprimir_error("-distancias requiere 1 parametro-")
+            return
         imprimir_comando("distancias", str(args[0]).rstrip())
-        distancias(grafo, str(args[0]).rstrip())
+        dist = distancias(grafo, str(args[0]).rstrip())
+        imprimir_distancias(dist)
+
     if command == "estadisticas":
+        if len(args) != 0:
+            imprimir_error("-estadisticas no requiere parametros-")
+            return
         imprimir_comando("estadisticas")
-        estadisticas(grafo)
+        vertices, aristas = estadisticas(grafo)
+        imprimir_estadisticas(vertices, aristas)
+
     if command == "comunidades":
+        if len(args) != 0:
+            imprimir_error("-comunidades no requiere parametros-")
+            return
         imprimir_comando("comunidades")
-        comunidades(grafo)
+        comunidad = comunidades(grafo)
+        for k, v in comunidad.items():
+            if len(v) > 2000 or len(v) < 4:
+                continue
+            imprimir_comunidad(k, v)
 
 
 # Tiempo: random walks (lineal) + n mayores con heap (n*log(k)) n->Cantidad de nodos total de todos los recorridos
@@ -89,10 +134,11 @@ def similares(grafo, vertice, k):
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param vertice: String - Id de un vertice.
     :param k: Int - Cantidad de similares a buscar.
+    :return: List - Lista con los ids de los vertices similares.
     """
     aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
     lista = heapq.nlargest(k, aux, key=aux.get)
-    imprimir_nodos(lista)
+    return lista
 
 
 # Tiempo igual a similares + un recorrido extra para eliminar adyacentes
@@ -102,11 +148,12 @@ def recomendar(grafo, vertice, k):
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param vertice: String - Id de un vertice.
     :param k: Int - Cantidad de similares a buscar.
+    :return: List - Lista con los ids de los vertices recomendados.
     """
     aux = n_random_walks(grafo, vertice, N_WALKS, WALKS_LARGE)
     result = {k: v for k, v in aux.items() if not grafo.son_adyacentes(k, vertice)}
     lista = heapq.nlargest(k, result, key=result.get)
-    imprimir_nodos(lista)
+    return lista
 
 
 # Tiempo O(E + V) (bfs)
@@ -116,12 +163,11 @@ def camino(grafo, vertice1, vertice2):
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param vertice1: String - Id del vertice de partida.
     :param vertice2: String - Id del vertice de llegada.
+    :return: List - Lista con los ids de los vertices que forman el camino minimo.
+                    Lista vacía en caso de que no se conecten los vértices
     """
     lista = grafo.camino_minimo(vertice1, vertice2)
-    if lista:
-        imprimir_camino(lista)
-    else:
-        imprimir_error("Los vertices no se unen.")
+    return lista
 
 
 def centralidad_exacta(grafo, n):
@@ -129,10 +175,11 @@ def centralidad_exacta(grafo, n):
     Busca los vertices que aparecen más veces entre todos los caminos mínimos existentes en el grafo.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param n: Int - Cantidad de vertices a buscar.
+    :return: List - Lista con los ids de los n vertices mas centrales.
     """
     _, _, apariciones = grafo.bfs()
     lista = heapq.nlargest(n, apariciones, key=apariciones.get)
-    imprimir_nodos(lista)
+    return lista
 
 
 def centralidad_aproximada(grafo, n):
@@ -141,6 +188,7 @@ def centralidad_aproximada(grafo, n):
         entre todos los caminos mínimos existentes en el grafo.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param n: Int - Cantidad de vertices a buscar.
+    :return: List - Lista con los ids de los n vertices mas centrales.
     """
     ocurrencias = {}
     for _ in range(N_RANDOM_CHOICE):
@@ -152,7 +200,7 @@ def centralidad_aproximada(grafo, n):
                 ocurrencias[k] = 1
             ocurrencias[k] += 1
     lista = heapq.nlargest(n, ocurrencias, key=ocurrencias.get)
-    imprimir_nodos(lista)
+    return lista
 
 
 def distancias(grafo, vertice):
@@ -161,6 +209,7 @@ def distancias(grafo, vertice):
         considerando las distancias como la cantidad de saltos.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
     :param vertice: String - Id del vertice de partida.
+    :return: Map<Int, String> - Mapa con una lista de ids de vertices para cada distancia.
     """
     _, orden, _ = grafo.bfs(vertice)
 
@@ -170,7 +219,7 @@ def distancias(grafo, vertice):
             dist[v] = []
         dist[v].append(k)
 
-    imprimir_distancias(dist)
+    return dist
 
 
 def estadisticas(grafo):
@@ -178,18 +227,17 @@ def estadisticas(grafo):
     Obtiene algunas estadisticas del grafo:
         *Cantidad de vértices.
         *Cantidad de aristas.
-        *Promedio de grado de entrada de cada vértice.
-        *Promedio de grado de entrada de cada vértice.
-        *Densidad del grafo.
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :return: (Int, Int) - Cantidad de vertices, Cantidad de aristas
     """
-    imprimir_estadisticas(grafo.cantidad_vertices(), grafo.cantidad_aristas())
+    return grafo.cantidad_vertices(), grafo.cantidad_aristas()
 
 
 def comunidades(grafo):
     """
     Busca las comunidades que se encuentren en el grafo. Utilizando el algoritmo de label propagation
     :param grafo: Grafo - Grafo sobre el cual ejecutar la función.
+    :return: Map<String, List<String>> - Mapa con una lista de ids de vertices para cada label de una comunidad
     """
     label = {}
 
@@ -212,10 +260,7 @@ def comunidades(grafo):
             comunidad[v] = []
         comunidad[v].append(k)
 
-    for k, v in comunidad.items():
-        if len(v) > 2000 or len(v) < 4:
-            continue
-        imprimir_comunidad(k, v)
+    return comunidad
 
 
 # Realiza n random walks y devuelve un mapa con la cuenta de las veces que aprecio cada nodo
