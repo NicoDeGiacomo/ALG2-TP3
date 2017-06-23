@@ -11,9 +11,9 @@ import heapq
 from salida import *
 
 N_WALKS = 100
-WALKS_LARGE = 300
+WALKS_LARGE = 100
 N_RANDOM_CHOICE = 20
-LABEL_ITER = 10
+LABEL_ITER = 100
 LABEL_WALKS_LARGE = 30
 
 
@@ -85,7 +85,7 @@ def do_function(command, args, grafo):
             imprimir_camino(lista)
         else:
             imprimir_error("Los vertices no se unen.")
-            return
+        return
 
     if command == "centralidad_exacta":
         if len(args) != 1:
