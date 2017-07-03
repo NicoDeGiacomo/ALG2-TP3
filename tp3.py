@@ -14,127 +14,8 @@ from salida import *
 N_WALKS = 100
 WALKS_LARGE = 100
 N_RANDOM_CHOICE = 20
-LABEL_ITER = 100
+LABEL_ITER = 10
 LABEL_WALKS_LARGE = 30
-
-
-def main():
-    """
-    Lee el archivo que recive en los argumentos y carga el grafo.
-    Lee los comandos de a uno y ejecuta la función correspondiente.
-    """
-
-    if len(sys.argv) != 2:
-        imprimir_error("-Please provide 1 arguments-")
-        imprimir_error("-Usage: tp3.py <inputfile>")
-        sys.exit(2)
-
-    grafo = Grafo()
-
-    imprimir_mensaje("Loading file ...")
-    with open(sys.argv[1]) as file:
-        for _ in range(4):
-            next(file)
-        reader = csv.DictReader(file, delimiter="\t", fieldnames=["a", "b"])
-        for line in reader:
-            grafo.agregar_vertice(line["a"])
-            grafo.agregar_vertice(line["b"])
-            grafo.agregar_arista(line["a"], line["b"])
-
-    # Leo por entrada standard
-    imprimir_mensaje("Reading commands ...")
-    for line in sys.stdin:
-        comando = line.split(" ")
-        do_function(comando[0], comando[1:], grafo)
-
-
-def do_function(command, args, grafo):
-    """
-    Recibe un comando a ejecutar y llama a la función correspondiente.
-    :param command: String - Comando a ejecutar.
-    :param args: List<String> - Lista de parámetros para la ejecución del comando.
-    :param grafo: Grafo - Grafo sobre el cual ejecutar el comando.
-    """
-    command = str(command).rstrip()
-    if command == "similares":
-        if len(args) != 2:
-            imprimir_error("-similares requiere 2 parametros-")
-            return
-        imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
-        lista = similares(grafo, str(args[0]).rstrip(), int(args[1]))
-        imprimir_nodos(lista)
-        return
-
-    if command == "recomendar":
-        if len(args) != 2:
-            imprimir_error("-recomendar requiere 2 parametros-")
-            return
-        imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
-        lista = recomendar(grafo, str(args[0]).rstrip(), int(args[1]))
-        imprimir_nodos(lista)
-        return
-
-    if command == "camino":
-        if len(args) != 2:
-            imprimir_error("-camino requiere 2 parametros-")
-            return
-        imprimir_comando("camino", str(args[0]).rstrip(), str(args[1]).rstrip())
-        lista = camino(grafo, str(args[0]).rstrip(), str(args[1]).rstrip())
-        if lista:
-            imprimir_camino(lista)
-        else:
-            imprimir_error("Los vertices no se unen.")
-        return
-
-    if command == "centralidad_exacta":
-        if len(args) != 1:
-            imprimir_error("-centralidad_exacta requiere 1 parametro-")
-            return
-        imprimir_comando("centralidad_exacta", int(args[0]))
-        lista = centralidad_exacta(grafo, int(args[0]))
-        imprimir_nodos(lista)
-        return
-
-    if command == "centralidad_aproximada":
-        if len(args) != 1:
-            imprimir_error("-centralidad_aproximada requiere 1 parametro-")
-            return
-        imprimir_comando("centralidad_aproximada", int(args[0]))
-        lista = centralidad_aproximada(grafo, int(args[0]))
-        imprimir_nodos(lista)
-        return
-
-    if command == "distancias":
-        if len(args) != 1:
-            imprimir_error("-distancias requiere 1 parametro-")
-            return
-        imprimir_comando("distancias", str(args[0]).rstrip())
-        dist = distancias(grafo, str(args[0]).rstrip())
-        imprimir_distancias(dist)
-        return
-
-    if command == "estadisticas":
-        if len(args) != 0:
-            imprimir_error("-estadisticas no requiere parametros-")
-            return
-        imprimir_comando("estadisticas")
-        vertices, aristas = estadisticas(grafo)
-        imprimir_estadisticas(vertices, aristas)
-        return
-
-    if command == "comunidades":
-        if len(args) != 0:
-            imprimir_error("-comunidades no requiere parametros-")
-            return
-        imprimir_comando("comunidades")
-        comunidad = comunidades(grafo)
-        for k, v in comunidad.items():
-            if len(v) > 2000 or len(v) < 4:
-                continue
-            imprimir_comunidad(k, v)
-        return
-
-    imprimir_error("El comando indicado no fue reconocido: " + str(command))
 
 
 def similares(grafo, vertice, k):
@@ -290,14 +171,125 @@ def n_random_walks(grafo, vertice, n, pasos):
 
 
 class GraphAnalysisShell(cmd.Cmd):
+    """Shell para realizar analisis sobre grafos"""
     intro = 'Welcome to the graph analysis shell.   Type \'help\' or \'?\' to list commands.\n'
     prompt = '(Graph Analysis)'
+    grafo = None
+
+    def preloop(self):
+        """
+        Lee el archivo que recive como argumento y carga el grafo.
+        """
+
+        if len(sys.argv) != 2:
+            imprimir_error("-Please provide 1 arguments-")
+            imprimir_error("-Usage: tp3.py <inputfile>")
+            sys.exit(2)
+
+        self.grafo = Grafo()
+
+        imprimir_mensaje("Loading file ...")
+        with open(sys.argv[1]) as file:
+            for _ in range(4):
+                next(file)
+            reader = csv.DictReader(file, delimiter="\t", fieldnames=["a", "b"])
+            for line in reader:
+                self.grafo.agregar_vertice(line["a"])
+                self.grafo.agregar_vertice(line["b"])
+                self.grafo.agregar_arista(line["a"], line["b"])
 
     def do_similares(self, args):
-        """Encuentra los vertices mas similares: similares 1"""
-        do_function("similares", args, grafo)
+        """Encuentra los vertices mas similares. Uso: similares 1"""
+        if len(args) != 2:
+            imprimir_error("-similares requiere 2 parametros-")
+            return
+        imprimir_comando("similares", str(args[0]).rstrip(), int(args[1]))
+        lista = similares(self.grafo, str(args[0]).rstrip(), int(args[1]))
+        imprimir_nodos(lista)
+        return
 
+    def do_recomendar(self, args):
+        """Encuentra los vertices más similares con los cuales no tiene relación. Uso: recomendar 1"""
+        if len(args) != 2:
+            imprimir_error("-recomendar requiere 2 parametros-")
+            return
+        imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
+        lista = recomendar(self.grafo, str(args[0]).rstrip(), int(args[1]))
+        imprimir_nodos(lista)
+        return
+
+    def do_camino(self, args):
+        """Busca el camino más corto para llegar desde vertice1 hasta vertice2. Uso: camino 1 2"""
+        if len(args) != 2:
+            imprimir_error("-camino requiere 2 parametros-")
+            return
+        imprimir_comando("camino", str(args[0]).rstrip(), str(args[1]).rstrip())
+        lista = camino(self.grafo, str(args[0]).rstrip(), str(args[1]).rstrip())
+        if lista:
+            imprimir_camino(lista)
+        else:
+            imprimir_error("Los vertices no se unen.")
+        return
+
+    def do_centralidad_exacta(self, args):
+        """Busca los vertices que aparecen más veces entre todos los caminos mínimos existentes en el grafo. Uso: centralidad_exacta 1"""
+        if len(args) != 1:
+            imprimir_error("-centralidad_exacta requiere 1 parametro-")
+            return
+        imprimir_comando("centralidad_exacta", int(args[0]))
+        lista = centralidad_exacta(self.grafo, int(args[0]))
+        imprimir_nodos(lista)
+        return
+
+    def do_centralidad_aproximada(self, args):
+        """Busca una aproximación de los vertices mas centrales. Uso: centralidad_aproximada 1"""
+        if len(args) != 1:
+            imprimir_error("-centralidad_aproximada requiere 1 parametro-")
+            return
+        imprimir_comando("centralidad_aproximada", int(args[0]))
+        lista = centralidad_aproximada(self.grafo, int(args[0]))
+        imprimir_nodos(lista)
+        return
+
+    def do_distancias(self, args):
+        """Obtiene los vertices que se encuentran a cada una de las distancias posibles. Uso: distancias 1"""
+        if len(args) != 1:
+            imprimir_error("-distancias requiere 1 parametro-")
+            return
+        imprimir_comando("estadisticas", str(args).rstrip())
+        dist = distancias(self.grafo, str(args).rstrip())
+        imprimir_distancias(dist)
+        return
+
+    def do_estadisticas(self, args):
+        """Obtiene algunas estadisticas del grafo. Uso: estadisticas"""
+        if len(args) != 0:
+            imprimir_error("-estadisticas no requiere parametros-")
+            return
+        imprimir_comando("estadisticas")
+        vertices, aristas = estadisticas(self.grafo)
+        imprimir_estadisticas(vertices, aristas)
+        return
+
+    def do_comunidades(self, args):
+        """Busca las comunidades que se encuentren en el grafo. Uso: comunidades"""
+        if len(args) != 0:
+            imprimir_error("-comunidades no requiere parametros-")
+            return
+        imprimir_comando("comunidades")
+        comunidad = comunidades(self.grafo)
+        for k, v in comunidad.items():
+            if len(v) > 2000 or len(v) < 4:
+                continue
+            imprimir_comunidad(k, v)
+        return
+
+    @staticmethod
+    def do_bye():
+        """Cierra el shell."""
+        print('Gracias por usar GraphAnalysisShell!')
+        return True
 
 
 if __name__ == "__main__":
-    main()
+    GraphAnalysisShell().cmdloop()

@@ -13,7 +13,8 @@ def imprimir_comando(comando, *args):
     :param comando: String - comando.
     :param args: List<String> - Parametros a imprimir.
     """
-    print(comando, end=" ")
+    print("Ejecutando el comando: " + comando)
+    print("Parametros: " + comando, end=" ")
     print(" ".join(map(str, args)))
 
 
