@@ -23,8 +23,6 @@ def main():
     Lee los comandos de a uno y ejecuta la función correspondiente.
     """
 
-    sys.stdin = open("comandos.txt")
-
     if len(sys.argv) != 2:
         imprimir_error("-Please provide 1 arguments-")
         imprimir_error("-Usage: tp3.py <inputfile>")
