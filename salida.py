@@ -7,15 +7,28 @@ Corrector: Agustina Mendez
 import sys
 
 
+class BColors:
+    """Colores para imprimir en la temrinal."""
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 def imprimir_comando(comando, *args):
     """
     Imprime un comando con sus parametros.
     :param comando: String - comando.
     :param args: List<String> - Parametros a imprimir.
     """
-    print("Ejecutando el comando: " + comando)
-    print("Parametros: " + comando, end=" ")
+    print(BColors.OKBLUE + "Comando:" + BColors.ENDC, comando)
+    print(BColors.OKBLUE + "Parametros: " + BColors.ENDC, end=" ")
     print(" ".join(map(str, args)))
+    print(BColors.OKBLUE + "Resultado:" + BColors.ENDC)
 
 
 def imprimir_nodos(lista):
@@ -39,7 +52,7 @@ def imprimir_error(mensaje):
     Imprime un mensaje de error.
     :param mensaje: String - Mensaje de error.
     """
-    print("Error:", mensaje, file=sys.stderr, end="\n\n")
+    print(BColors.FAIL + "Error:" + BColors.ENDC, mensaje, file=sys.stderr, end="\n\n")
 
 
 def imprimir_distancias(distancias):

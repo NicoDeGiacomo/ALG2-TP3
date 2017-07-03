@@ -1,1 +1,1 @@
-distancias 1
+similares 1 10

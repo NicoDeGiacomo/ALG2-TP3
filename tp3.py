@@ -198,8 +198,9 @@ class GraphAnalysisShell(cmd.Cmd):
                 self.grafo.agregar_vertice(line["b"])
                 self.grafo.agregar_arista(line["a"], line["b"])
 
-    def do_similares(self, args):
+    def do_similares(self, line):
         """Encuentra los vertices mas similares. Uso: similares 1"""
+        args = parse(line)
         if len(args) != 2:
             imprimir_error("-similares requiere 2 parametros-")
             return
@@ -210,7 +211,7 @@ class GraphAnalysisShell(cmd.Cmd):
 
     def do_recomendar(self, args):
         """Encuentra los vertices más similares con los cuales no tiene relación. Uso: recomendar 1"""
-        if len(args) != 2:
+        if len(args) != 3:
             imprimir_error("-recomendar requiere 2 parametros-")
             return
         imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
@@ -218,8 +219,9 @@ class GraphAnalysisShell(cmd.Cmd):
         imprimir_nodos(lista)
         return
 
-    def do_camino(self, args):
+    def do_camino(self, line):
         """Busca el camino más corto para llegar desde vertice1 hasta vertice2. Uso: camino 1 2"""
+        args = parse(line)
         if len(args) != 2:
             imprimir_error("-camino requiere 2 parametros-")
             return
@@ -231,8 +233,9 @@ class GraphAnalysisShell(cmd.Cmd):
             imprimir_error("Los vertices no se unen.")
         return
 
-    def do_centralidad_exacta(self, args):
+    def do_centralidad_exacta(self, line):
         """Busca los vertices que aparecen más veces entre todos los caminos mínimos existentes en el grafo. Uso: centralidad_exacta 1"""
+        args = parse(line)
         if len(args) != 1:
             imprimir_error("-centralidad_exacta requiere 1 parametro-")
             return
@@ -241,8 +244,9 @@ class GraphAnalysisShell(cmd.Cmd):
         imprimir_nodos(lista)
         return
 
-    def do_centralidad_aproximada(self, args):
+    def do_centralidad_aproximada(self, line):
         """Busca una aproximación de los vertices mas centrales. Uso: centralidad_aproximada 1"""
+        args = parse(line)
         if len(args) != 1:
             imprimir_error("-centralidad_aproximada requiere 1 parametro-")
             return
@@ -251,18 +255,20 @@ class GraphAnalysisShell(cmd.Cmd):
         imprimir_nodos(lista)
         return
 
-    def do_distancias(self, args):
+    def do_distancias(self, line):
         """Obtiene los vertices que se encuentran a cada una de las distancias posibles. Uso: distancias 1"""
+        args = parse(line)
         if len(args) != 1:
             imprimir_error("-distancias requiere 1 parametro-")
             return
-        imprimir_comando("estadisticas", str(args).rstrip())
-        dist = distancias(self.grafo, str(args).rstrip())
+        imprimir_comando("estadisticas", str(args[0]).rstrip())
+        dist = distancias(self.grafo, str(args[0]).rstrip())
         imprimir_distancias(dist)
         return
 
-    def do_estadisticas(self, args):
+    def do_estadisticas(self, line):
         """Obtiene algunas estadisticas del grafo. Uso: estadisticas"""
+        args = parse(line)
         if len(args) != 0:
             imprimir_error("-estadisticas no requiere parametros-")
             return
@@ -271,8 +277,9 @@ class GraphAnalysisShell(cmd.Cmd):
         imprimir_estadisticas(vertices, aristas)
         return
 
-    def do_comunidades(self, args):
+    def do_comunidades(self, line):
         """Busca las comunidades que se encuentren en el grafo. Uso: comunidades"""
+        args = parse(line)
         if len(args) != 0:
             imprimir_error("-comunidades no requiere parametros-")
             return
@@ -287,8 +294,17 @@ class GraphAnalysisShell(cmd.Cmd):
     @staticmethod
     def do_bye():
         """Cierra el shell."""
-        print('Gracias por usar GraphAnalysisShell!')
+        imprimir_mensaje("Gracias por usar GraphAnalysisSheell!")
         return True
+
+    def do_EOF(self, line):
+        """Cierra el shell."""
+        return self.do_bye()
+
+
+def parse(arg):
+    """Convierte una serie de numeros en una tupla"""
+    return tuple(map(int, arg.split()))
 
 
 if __name__ == "__main__":
