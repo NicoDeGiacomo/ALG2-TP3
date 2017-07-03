@@ -4,6 +4,7 @@ Alumnos: De Giacomo - Ponce
 Padrones: 99702 - 99723
 Corrector: Agustina Mendez
 """
+import cmd
 import csv
 from grafo import Grafo
 import random
@@ -288,6 +289,16 @@ def n_random_walks(grafo, vertice, n, pasos):
     if vertice in aux:
         aux.pop(vertice)
     return aux
+
+
+class GraphAnalysisShell(cmd.Cmd):
+    intro = 'Welcome to the graph analysis shell.   Type \'help\' or \'?\' to list commands.\n'
+    prompt = '(Graph Analysis)'
+
+    def do_similares(self, args):
+        """Encuentra los vertices mas similares: similares 1"""
+        do_function("similares", args, grafo)
+
 
 
 if __name__ == "__main__":
