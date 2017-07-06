@@ -209,9 +209,10 @@ class GraphAnalysisShell(cmd.Cmd):
         imprimir_nodos(lista)
         return
 
-    def do_recomendar(self, args):
+    def do_recomendar(self, line):
         """Encuentra los vertices más similares con los cuales no tiene relación. Uso: recomendar 1"""
-        if len(args) != 3:
+        args = parse(line)
+        if len(args) != 2:
             imprimir_error("-recomendar requiere 2 parametros-")
             return
         imprimir_comando("recomendar", str(args[0]).rstrip(), int(args[1]))
@@ -261,7 +262,7 @@ class GraphAnalysisShell(cmd.Cmd):
         if len(args) != 1:
             imprimir_error("-distancias requiere 1 parametro-")
             return
-        imprimir_comando("estadisticas", str(args[0]).rstrip())
+        imprimir_comando("distancias", str(args[0]).rstrip())
         dist = distancias(self.grafo, str(args[0]).rstrip())
         imprimir_distancias(dist)
         return
@@ -292,14 +293,15 @@ class GraphAnalysisShell(cmd.Cmd):
         return
 
     @staticmethod
-    def do_bye():
+    def do_bye(line):
         """Cierra el shell."""
         imprimir_mensaje("Gracias por usar GraphAnalysisSheell!")
         return True
 
     def do_EOF(self, line):
         """Cierra el shell."""
-        return self.do_bye()
+        imprimir_mensaje("")
+        return self.do_bye(line)
 
 
 def parse(arg):

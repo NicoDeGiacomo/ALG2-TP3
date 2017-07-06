@@ -129,7 +129,6 @@ class Grafo:
         """
         Devuelve la cantidad de aristas en el grafo.
         :return: Int - Cantidad de aristas en el grafo.
-        :return:
         """
         return self.n_aristas
 
